@@ -40,12 +40,13 @@ module.exports = {
 
     loginUser: async (req, res, next) => {
       console.log(req.body)
-        passport.authenticate("local", (err, user) => {
+        passport.authenticate("local", (err, user, info) => {
           if (err) {
             return next(err);
           }
           if (!user) {
-            return res.status(401).json({ error: 'Authentication failed' });
+            const errorMessage = info && info.message ? info.message : 'Authentication failed';
+            return res.status(401).json({ error: errorMessage });
           }
           req.logIn(user, (err) => {
             if (err) {

@@ -1,18 +1,29 @@
+// passport.js
+
 const LocalStrategy = require("passport-local").Strategy;
 const User = require('../model/User');
 const bcrypt = require('bcrypt');
 
 module.exports = function (passport) {
   passport.use(new LocalStrategy({
-    usernameField: 'identity',
+    usernameField: 'identity', // Use 'identity' to handle both email and phone
     passwordField: 'password'
   },
   async function(identity, password, done) {
     try {
-      const user = await User.findOne({ $or: [{ email: identity }, { phone: identity }] });
+      // Check if the identity is a valid email address
+      const isEmail = /^\S+@\S+\.\S+$/.test(identity);
+
+      let user;
+      if (isEmail) {
+        user = await User.findOne({ email: identity });
+      } else {
+        // If not an email, assume it's a phone number
+        user = await User.findOne({ phone: identity });
+      }
 
       if (!user) {
-        return done(null, false, { message: 'There is no active user with this email pr phone number' });
+        return done(null, false, { message: 'There is no active user with this email or phone number' });
       } 
 
       const isMatch = await bcrypt.compare(password, user.password);
@@ -43,5 +54,4 @@ module.exports = function (passport) {
       done(err);
     }
   });
-  
 };
