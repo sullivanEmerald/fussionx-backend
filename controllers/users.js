@@ -5,6 +5,7 @@ const cloudinary = require('../middleware/cloudinary')
 
 module.exports = {
     getUsers : async (req, res) => {
+
         try {
             const users = await userModel.find().lean()
             if(!users){
@@ -17,39 +18,42 @@ module.exports = {
     },
 
 
-    updateUser : async (req, res) =>{
+    updateUser: async (req, res) => {
         try {
-            const {firstname, surname, email, phone} = req.body
-            const {id} =  req.params
-
-            const users = await userModel.find().lean()
-
-            const existingUser = users.find((item) => item.email === email || item.phone === phone)
-
+            // Getting form details from the request.
+            const { firstname, surname, email, phone } = req.body;
     
-            if(existingUser){
-                if(existingUser.email === email ){
-                    return res.status(400).json({ error : 'A user with the email already exists'})
-                }else if(existingUser.phone === Number(phone)){
-                    return res.status(400).json({ error : 'A user with the phone number already exists'}) 
+            // Getting user ID
+            const { id } = req.params;
+    
+            // Find if there is any user with the same email or phone, excluding the current user
+            const existingUser = await userModel.findOne({
+                $or: [{ email }, { phone }],
+                _id: { $ne: id }
+            }).lean();
+    
+            if (existingUser) {
+                if (existingUser.email === email) {
+                    return res.status(409).json({ error: 'A user with the email already exists' });
+                }
+                if (existingUser.phone === phone) {
+                    return res.status(409).json({ error: 'A user with the Phone number already exists' });
                 }
             }
-
-            const updateUser = await userModel.findById(id, {
-                    name : firstname,
-                    surname : surname,
-                    email : email,
-                    phone : phone
-            })
-
-            if(!updateUser){
-              return res.status(501).json({ error : 'Internal server error. Check your connection'})
+    
+            // Update user record
+            const updatedUser = await userModel.findByIdAndUpdate(id, {
+                name: firstname,
+                surname,
+                email,
+                phone
+            }, { new: true });
+    
+            if (updatedUser) {
+                return res.status(200).json({ msg: 'User Record Successfully Updated' });
+            } else {
+                return res.status(501).json({ error: 'Internal server error. Check your connection' });
             }
-            
-            
-            res.status(200).json({ msg : 'User successfully record'})
-            console.log('updated successfully')
-
         } catch (error) {
             console.error('Internal server error:', error);
             return res.status(500).json({ error: 'Internal server error' });
