@@ -39,7 +39,6 @@ module.exports = {
 
 
     loginUser: async (req, res, next) => {
-      console.log(req.body)
         passport.authenticate("local", (err, user, info) => {
           if (err) {
             return next(err);
