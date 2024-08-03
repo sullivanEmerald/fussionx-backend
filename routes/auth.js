@@ -12,10 +12,10 @@ router.post('/login', passport.authenticate('local', { failureRedirect: '/login'
 
 
 // route for fetching all predictions, users and all user images
-
 router.get('/predictions', predictionController.getPredictions)
 router.get('/users', usersController.getUsers)
 router.get('/profile/images', imageController.getImages)
+
 
 
 module.exports =  router

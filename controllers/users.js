@@ -1,6 +1,7 @@
 const userModel =  require('../model/User')
 const imageCollection =  require('../model/images')
 const cloudinary = require('../middleware/cloudinary')
+const bycrypt = require('bcrypt')
 
 
 module.exports = {
@@ -114,6 +115,53 @@ module.exports = {
         } catch (error) {
             return res.status(500).json({ error: 'Internal server error' });
         }
+    },
+
+    resetPassword : async (req, res) => {
+
+        const { id } = req.user;
+
+        const { oldPassword, userPass} = req.body
+
+       
+        const user = await userModel.findById(id)
+
+        if(user){
+
+            const { password } = user;
+
+            const isUserPassword = await bycrypt.compare(oldPassword, password)
+
+            if(isUserPassword){
+
+                const salt = await bycrypt.genSalt(10)
+                const newPassword =  await bycrypt.hash(userPass, salt)
+
+                console.log(newPassword)
+
+
+
+                const updateUserPassword = await userModel.findByIdAndUpdate(id, {
+                    $set : {
+                        password : newPassword
+                    }
+                }) 
+
+                if(updateUserPassword){
+                    const updatedPassword = await userModel.findById(id)
+                    console.log(updatedPassword.password)
+                }
+
+
+                
+
+            } else {
+                console.log('oga, dey game oooo')
+            }
+ 
+        }
+
+        return res.status(501).json({ error : 'Network Error'})
     }
     
  }

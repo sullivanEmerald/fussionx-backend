@@ -7,6 +7,7 @@ const upload =  require('../middleware/multer')
 router.put('/update/:id', userController.updateUser)
 router.post('/image', upload.single('profilePicture'), userController.createUserImage)
 router.put('/image/update', upload.single('newPhoto'), userController.updateProfilePhoto)
+router.post('/changepassword', userController.resetPassword)
 
 
 
