@@ -119,49 +119,42 @@ module.exports = {
 
     resetPassword : async (req, res) => {
 
-        const { id } = req.user;
-
-        const { oldPassword, userPass} = req.body
-
-       
-        const user = await userModel.findById(id)
-
-        if(user){
-
-            const { password } = user;
-
-            const isUserPassword = await bycrypt.compare(oldPassword, password)
-
-            if(isUserPassword){
-
-                const salt = await bycrypt.genSalt(10)
-                const newPassword =  await bycrypt.hash(userPass, salt)
-
-                console.log(newPassword)
-
-
-
-                const updateUserPassword = await userModel.findByIdAndUpdate(id, {
-                    $set : {
-                        password : newPassword
-                    }
-                }) 
-
-                if(updateUserPassword){
-                    const updatedPassword = await userModel.findById(id)
-                    console.log(updatedPassword.password)
-                }
-
-
-                
-
-            } else {
-                console.log('oga, dey game oooo')
-            }
- 
-        }
-
-        return res.status(501).json({ error : 'Network Error'})
-    }
+        try {
+            const { id } = req.user;
+            const { oldPassword, userPass } = req.body;
     
+           
+            const user = await userModel.findById(id);
+    
+            if (!user) {
+                return res.status(404).json({ error: 'User not found', redirect : false });
+            }
+    
+            const { password } = user;
+    
+            
+            const isUserPassword = await bcrypt.compare(oldPassword, password);
+    
+            if (!isUserPassword) {
+                return res.status(400).json({ error: 'Incorrect Password Associated with the logged-in user', redirect: true });
+            }
+    
+           
+            const salt = await bcrypt.genSalt(10);
+            const newPassword = await bcrypt.hash(userPass, salt);
+    
+            
+            const updateUserPassword = await userModel.findByIdAndUpdate(id, {
+                $set: { password: newPassword },
+            });
+    
+            if (!updateUserPassword) {
+                return res.status(500).json({ error: 'Password Change Unsuccessful', redirect : false });
+            }
+    
+            return res.status(200).json({ msg: 'Password Successfully Changed' });
+        } catch (error) {
+            return res.status(500).json({ error: 'Server error' });
+        }
+    }
  }
