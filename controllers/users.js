@@ -1,7 +1,7 @@
 const userModel =  require('../model/User')
 const imageCollection =  require('../model/images')
 const cloudinary = require('../middleware/cloudinary')
-const bycrypt = require('bcrypt')
+const bcrypt = require('bcrypt')
 
 
 module.exports = {
@@ -119,6 +119,7 @@ module.exports = {
 
     resetPassword : async (req, res) => {
 
+        console.log(req.body)
         try {
             const { id } = req.user;
             const { oldPassword, userPass } = req.body;
@@ -154,7 +155,8 @@ module.exports = {
     
             return res.status(200).json({ msg: 'Password Successfully Changed' });
         } catch (error) {
-            return res.status(500).json({ error: 'Server error' });
+            console.error(error)
+            return res.status(500).json({ error: 'Server error', redirect :  false });
         }
     }
  }
