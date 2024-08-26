@@ -38,22 +38,26 @@ module.exports = {
     },
 
 
-    loginUser: async (req, res, next) => {
-        passport.authenticate("local", (err, user, info) => {
+    loginUser: (req, res, next) => {
+      passport.authenticate("local", (err, user, info) => {
+        if (err) {
+          console.error('Authentication error:', err);
+          return res.status(500).json({ error: 'An internal server error occurred' });
+        }
+        if (!user) {
+          console.log('Authentication failed:', info.message);
+          return res.status(401).json({ error: info.message || 'Authentication failed' });
+        }
+        req.logIn(user, (err) => {
           if (err) {
-            return next(err);
+            console.error('Login error:', err);
+            return res.status(500).json({ error: 'Login failed due to server error' });
           }
-          if (!user) {
-            const errorMessage = info && info.message ? info.message : 'Authentication failed';
-            return res.status(401).json({ error: errorMessage });
-          }
-          req.logIn(user, (err) => {
-            if (err) {
-              return next(err);
-            }
-            return res.status(200).json({ message: 'Login successful', user: req.user });
-          });
-        })(req, res, next);
-      },
+          return res.status(200).json({ message: 'Login successful', user });
+        });
+      })(req, res, next);
+    },
+    
+    
       
 }

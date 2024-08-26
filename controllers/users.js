@@ -118,8 +118,6 @@ module.exports = {
     },
 
     resetPassword : async (req, res) => {
-
-        console.log(req.body)
         try {
             const { id } = req.user;
             const { oldPassword, userPass } = req.body;

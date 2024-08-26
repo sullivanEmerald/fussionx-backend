@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 
 module.exports = function (passport) {
   passport.use(new LocalStrategy({
-    usernameField: 'identity', // Use 'identity' to handle both email and phone
+    usernameField: 'identity', 
     passwordField: 'password'
   },
   async function(identity, password, done) {
@@ -15,6 +15,7 @@ module.exports = function (passport) {
       const isEmail = /^\S+@\S+\.\S+$/.test(identity);
 
       let user;
+
       if (isEmail) {
         user = await User.findOne({ email: identity });
       } else {
@@ -33,6 +34,7 @@ module.exports = function (passport) {
       }
 
       return done(null, user);
+
     } catch (err) {
       return done(err);
     }
